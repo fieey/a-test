@@ -167,36 +167,12 @@
         });
       }
     })
-
-    
-    AFRAME.registerComponent('screen-controller', {
+    //車の操作
+    AFRAME.registerComponent('xr-two-axis-controller', {
       schema: {
         deadZone: {default: 0}
       },
-      init: function () {
-        this.viewerSpace = null;
-        this.deflected = false;
-        console.log('this.el', this.el);
-        this.el.sceneEl.renderer.xr.addEventListener('sessionend', (ev) => {
-          console.log('sessionend', ev);
-          this.viewerSpace = null;
-        });
-        this.el.sceneEl.renderer.xr.addEventListener('sessionstart', (ev) => {
-          console.log('sessionstart', ev);
-
-          let session = this.el.sceneEl.renderer.xr.getSession();
-
-          // Get a 'viewer' reference space (attached to the phone) for use
-          // with screen space input.
-          session.requestReferenceSpace('viewer').then((space) => {
-            console.log('got viewer space', space);
-            this.viewerSpace = space;
-          });
-        });
-      },
       tick: function () {
-        if (!this.viewerSpace) return;
-
         let emit = (x, y) => {
           let detail = {axis: [x, y, 0], changed: [0, 1]};
           this.deflected = (x != 0 || y != 0);
@@ -205,80 +181,30 @@
 
         let session = this.el.sceneEl.renderer.xr.getSession();
         if (!session) return;
-
-        // Ignore the XR screen input source if DOM Overlay is in use.
-        if (session.domOverlayState) return;
-
         let inputs = session.inputSources;
 
-        let have_input = false;
         for (let i = 0; i < inputs.length; ++i) {
           let source = inputs[i];
           //console.log('tick source=', source);
-          // Ignore inputs other than screen touch. Other controller types
-          // are handled separately.
-          if (source.targetRayMode != "screen")
+          // Ignore screen touch.
+          if (source.targetRayMode == "screen")
+            continue;
+          if (!source.gamepad || source.gamepad.axes.length < 2)
             continue;
 
-          let frame = this.el.sceneEl.frame;
-
-          // Get a pose for the touch event in viewer space, this is locked to
-          // the phone and moves with the phone. This way, the input pose
-          // is relative to the virtual camera position. (For world interactions,
-          // we'd want to use local-floor space or similar.)
-          let inputPose = frame.getPose(source.targetRaySpace, this.viewerSpace);
-
-          // Transform a point on the input space ray into viewer space. This is
-          // the transform matrix multiplied by a (0, 0, -1, 1) vector,
-          // equivalent to subtracting the Z axis basis vector (third column)
-          // from the ray origin in viewer space (fourth column).
-          //
-          // Using three.js:
-          //
-          //let inputMat = new THREE.Matrix4();
-          //inputMat.fromArray(inputPose.transform.matrix);
-          //let vvec = new THREE.Vector4(0, 0, -1, 1);
-          //vvec.applyMatrix4(inputMat);
-          //
-          // Equivalent unrolled version:
-          let m = inputPose.transform.matrix;
-          let vx = m[12] - m[8];
-          let vy = m[13] - m[9];
-          let vz = m[14] - m[10];
-          let vw = 1 - m[11];
-          let vvec = new THREE.Vector4(vx, vy, vz, vw);
-
-          // For debugging, move the cursor to the corresponding screen
-          // position. This is a 3D point, but the Z location doesn't matter as
-          // long as its projected location is where we want it to end up
-          // onscreen.
-          //let cursor = document.getElementById('cursor');
-          //cursor.setAttribute('position', vvec);
-
-          // Now apply the screen projection to get a NDC vector
-          // with x/y ranging from -1 to 1 covering the screen,
-          // so the bottom left screen corner is (-1, -1).
-          let viewerPose = frame.getViewerPose(this.viewerSpace);
-          let proj = new THREE.Matrix4();
-          proj.fromArray(viewerPose.views[0].projectionMatrix);
-          let vproj = vvec.applyMatrix4(proj);
-          vproj.divideScalar(vproj.w);
-
           have_input = true;
+          let x = source.gamepad.axes[0];
+          let y = source.gamepad.axes[1];
           // Apply a dead zone to the controller axes.
-          if (Math.abs(vproj.x) < this.data.deadZone) vproj.x = 0;
-          if (Math.abs(vproj.y) < this.data.deadZone) vproj.y = 0;
+          if (Math.abs(x) < this.data.deadZone) x = 0;
+          if (Math.abs(y) < this.data.deadZone) y = 0;
           //console.log('tick', vproj.x, vproj.y);
-          emit(vproj.x, -vproj.y);
-        }
-
-        // If we haven't seen any screen input, make sure the virtual joystick
-        // returns to center if needed.
-        if (!have_input && this.deflected) {
-          emit(0, 0);
+          emit(x, y);
         }
       }
     })
+
+    
 
     // This screen joystick uses a DIV with a draggable element.
     // It works in 2D mode, or in WebXR immersive-ar when using

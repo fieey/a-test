@@ -118,14 +118,7 @@
     
    
     
-    AFRAME.registerComponent('car-controller-right', {
-      init: function () {
-        this.el.addEventListener('axismove', function (e) {
-          const car = document.querySelector('[car]').components.car
-          car.onAxisMoveAngle(e)
-        })
-      }
-    })
+    
 
     AFRAME.registerComponent('car-controller-two-axis', {
       init: function () {

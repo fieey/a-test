@@ -203,7 +203,7 @@
         }
       }
     })
-    //車の操作2
+    //車の操作2(ジョイスティックへのタップ操作検知)
     AFRAME.registerComponent('screen-controller', {
       schema: {
         deadZone: {default: 0}
@@ -474,8 +474,7 @@
         <a-entity hand-controls="left" mixin="controller" car-controller-left></a-entity>
         <a-entity hand-controls="right" mixin="controller" car-controller-right></a-entity>
         -->
-        
-        <a-entity screen-joystick car-controller-two-axis></a-entity>
+        <a-entity screen-controller="deadZone: 0.1" car-controller-two-axis></a-entity>
         <a-entity xr-two-axis-controller="deadZone: 0.1" car-controller-two-axis></a-entity>
         <a-entity exit-ar-button></a-entity>
       </a-entity>

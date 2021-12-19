@@ -120,15 +120,7 @@
     
     
 
-    AFRAME.registerComponent('car-controller-two-axis', {
-      init: function () {
-        this.el.addEventListener('axismove', (ev) => {
-          const car = document.querySelector('[car]').components.car;
-          car.onAxisMoveAngle(ev);
-          car.onAxisMoveSpeed(ev);
-        });
-      }
-    })
+   
 
     // See also https://github.com/aframevr/aframe/pull/4356
     AFRAME.registerComponent('hide-in-ar-mode', {

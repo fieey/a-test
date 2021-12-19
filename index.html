@@ -168,42 +168,7 @@
       }
     })
 
-    AFRAME.registerComponent('xr-two-axis-controller', {
-      schema: {
-        deadZone: {default: 0}
-      },
-      tick: function () {
-        let emit = (x, y) => {
-          let detail = {axis: [x, y, 0], changed: [0, 1]};
-          this.deflected = (x != 0 || y != 0);
-          this.el.emit('axismove', detail, false);
-        };
-
-        let session = this.el.sceneEl.renderer.xr.getSession();
-        if (!session) return;
-        let inputs = session.inputSources;
-
-        for (let i = 0; i < inputs.length; ++i) {
-          let source = inputs[i];
-          //console.log('tick source=', source);
-          // Ignore screen touch.
-          if (source.targetRayMode == "screen")
-            continue;
-          if (!source.gamepad || source.gamepad.axes.length < 2)
-            continue;
-
-          have_input = true;
-          let x = source.gamepad.axes[0];
-          let y = source.gamepad.axes[1];
-          // Apply a dead zone to the controller axes.
-          if (Math.abs(x) < this.data.deadZone) x = 0;
-          if (Math.abs(y) < this.data.deadZone) y = 0;
-          //console.log('tick', vproj.x, vproj.y);
-          emit(x, y);
-        }
-      }
-    })
-
+    
     AFRAME.registerComponent('screen-controller', {
       schema: {
         deadZone: {default: 0}

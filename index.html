@@ -116,14 +116,7 @@
       }
     })
     
-    AFRAME.registerComponent('car-controller-left', {
-      init: function () {
-        this.el.addEventListener('axismove', function (e) {
-          const car = document.querySelector('[car]').components.car
-          car.onAxisMoveSpeed(e)
-        })
-      }
-    })
+   
     
     AFRAME.registerComponent('car-controller-right', {
       init: function () {
